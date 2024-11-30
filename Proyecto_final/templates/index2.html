@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Experto de Préstamos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Sistema Experto de Préstamos</h1>
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="tipoPrestamo">Seleccione el tipo de préstamo:</label>
+                <select class="form-control" id="tipoPrestamo" required>
+                    <option value="personal">Personal</option>
+                    <option value="hipotecario">Hipotecario</option>
+                    <option value="auto">Auto</option>
+                    <option value="estudiantil">Estudiantil</option>
+                    <option value="Consolidación de deudas">Consolidación de deudas</option>
+                    <option value="reformas en hogar">Reformas en hogar</option>
+                    <option value="tarjetas de crédito">Tarjetas de crédito</option>
+                    <option value="Emergencias">Emergencias</option>
+                    <option value="vacaciones">Vacaciones</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ingresoMensual">Ingreso Mensual:</label>
+                <input type="number" class="form-control" id="ingresoMensual" required>
+            </div>
+            <div class="form-group">
+                <label for="valorPropiedad">Valor de la Propiedad:</label>
+                <input type="number" class="form-control" id="valorPropiedad">
+            </div>
+            <div class="form-group">
+                <label for="montoSolicitado">Monto Solicitado:</label>
+                <input type="number" class="form-control" id="montoSolicitado">
+            </div>
+            <div class="form-group">
+                <label for="cantidadDeudas">Cantidad de Deudas:</label>
+                <input type="number" class="form-control" id="cantidadDeudas">
+            </div>
+            <div class="form-group">
+                <label for="costoCurso">Costo del Curso:</label>
+                <input type="number" class="form-control" id="costoCurso">
+            </div>
+            <div class="form-group">
+                <label for="valorActivosNegocio">Valor de los Activos del Negocio:</label>
+                <input type="number" class="form-control" id="valorActivosNegocio">
+            </div>
+            <div class="form-group">
+                <label for="costoReformas">Costo de las Reformas:</label>
+                <input type="number" class="form-control" id="costoReformas">
+            </div>
+            <div class="form-group">
+                <label for="costoViaje">Costo del Viaje:</label>
+                <input type="number" class="form-control" id="costoViaje">
+            </div>
+            <button type="submit" class="btn btn-primary">Realizar Predicción</button>
+        </form>
+        <button id="generarReglasBtn" class="btn btn-secondary mt-3">Generar Nuevas Reglas</button>
+        <button id="verificarReglasBtn" class="btn btn-info mt-3">Verificar Reglas Existentes</button>
+        <button id="limpiarBtn" class="btn btn-warning mt-3">Limpiar</button>
+        <div class="mt-4">
+            <h3 id="resultado">Resultado:</h3>
+            <h3 id="conclusiones">Conclusiones:</h3>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#predictionForm').on('submit', function(e) {
+                e.preventDefault();
+                var data = {
+                    tipo_prestamo: $('#tipoPrestamo').val(),
+                    ingreso_mensual: $('#ingresoMensual').val(),
+                    valor_propiedad: $('#valorPropiedad').val(),
+                    monto_solicitado: $('#montoSolicitado').val(),
+                    cantidad_deudas: $('#cantidadDeudas').val(),
+                    costo_curso: $('#costoCurso').val(),
+                    valor_activos_negocio: $('#valorActivosNegocio').val(),
+                    costo_reformas: $('#costoReformas').val(),
+                    costo_viaje: $('#costoViaje').val()
+                };
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        $('#resultado').text('Tipo de préstamo predicho: ' + response.tipo_prestamo_predicho);
+                    }
+                });
+            });
+
+            $('#generarReglasBtn').on('click', function() {
+                $.ajax({
+                    url: '/generar_reglas',
+                    method: 'POST',
+                    success: function(response) {
+                        alert(response.message);
+                    }
+                });
+            });
+
+            $('#verificarReglasBtn').on('click', function() {
+                var data = {
+                    tipo_prestamo: $('#tipoPrestamo').val(),
+                    ingreso_mensual: $('#ingresoMensual').val(),
+                    valor_propiedad: $('#valorPropiedad').val(),
+                    monto_solicitado: $('#montoSolicitado').val(),
+                    cantidad_deudas: $('#cantidadDeudas').val(),
+                    costo_curso: $('#costoCurso').val(),
+                    valor_activos_negocio: $('#valorActivosNegocio').val(),
+                    costo_reformas: $('#costoReformas').val(),
+                    costo_viaje: $('#costoViaje').val()
+                };
+                $.ajax({
+                    url: '/verificar_reglas',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        $('#conclusiones').html('Conclusiones: <br>' + response.conclusiones.join('<br>'));
+                    }
+                });
+            });
+
+            $('#limpiarBtn').on('click', function() {
+                $('#predictionForm')[0].reset();
+                $('#resultado').text('');
+                $('#conclusiones').text('');
+            });
+        });
+    </script>
+</body>
+</html>
